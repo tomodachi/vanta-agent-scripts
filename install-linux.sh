@@ -26,7 +26,7 @@ UUID_PATH="/sys/class/dmi/id/product_uuid"
 # Try lsb_release, fallback with /etc/issue then uname command
 # Detection code taken from https://github.com/DataDog/datadog-agent/blob/master/cmd/agent/install_script.sh
 KNOWN_DISTRIBUTION="(Debian|Ubuntu|RedHat|CentOS|openSUSE|Amazon|Arista|SUSE)"
-DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo $KNOWN_DISTRIBUTION  || grep -Eo $KNOWN_DISTRIBUTION /etc/issue 2>/dev/null || grep -Eo $KNOWN_DISTRIBUTION /etc/Eos-release 2>/dev/null || grep -m1 -Eo $KNOWN_DISTRIBUTION /etc/os-release 2>/dev/null || uname -s)
+DISTRIBUTION=$(lsb_release -d 2>/dev/null | grep -Eo "$KNOWN_DISTRIBUTION"  || grep -Eo "$KNOWN_DISTRIBUTION" /etc/issue 2>/dev/null || grep -Eo "$KNOWN_DISTRIBUTION" /etc/Eos-release 2>/dev/null || grep -m1 -Eo "$KNOWN_DISTRIBUTION" /etc/os-release 2>/dev/null || uname -s)
 
 if [ -f /etc/debian_version -o "$DISTRIBUTION" == "Debian" -o "$DISTRIBUTION" == "Ubuntu" ]; then
     OS="Debian"
@@ -46,7 +46,7 @@ fi
 ##
 # Vanta needs to be installed as root; use sudo if not already uid 0
 ##
-if [ $(echo "$UID") = "0" ]; then
+if [ "$(echo "$UID")" = "0" ]; then
     SUDO=''
 else
     SUDO='sudo -E'
@@ -140,8 +140,8 @@ if [ ! -z "$VANTA_EXPERIMENTAL_SELINUX" ]; then
     fi
 
     printf "\033[34m\n* Downloading the SELinux package\n\033[0m"
-    rm -f $SELINUX_PATH
-    curl --progress-bar --output $SELINUX_PATH $SELINUX_URL
+    rm -f "$SELINUX_PATH"
+    curl --progress-bar --output "$SELINUX_PATH" "$SELINUX_URL"
 fi
 
 function onerror() {
@@ -157,8 +157,8 @@ trap onerror ERR
 # Download the agent
 ##
 printf "\033[34m\n* Downloading the Vanta Agent\n\033[0m"
-rm -f $PKG_PATH
-curl --progress-bar --output $PKG_PATH $PKG_URL
+rm -f "$PKG_PATH"
+curl --progress-bar --output "$PKG_PATH" "$PKG_URL"
 
 ##
 # Checksum
@@ -166,9 +166,9 @@ curl --progress-bar --output $PKG_PATH $PKG_URL
 printf "\033[34m\n* Ensuring checksums match\n\033[0m"
 
 if [ -x "$(command -v shasum)" ]; then
-  downloaded_checksum=$(shasum -a256 $PKG_PATH | cut -d" " -f1)
+  downloaded_checksum=$(shasum -a256 "$PKG_PATH" | cut -d" " -f1)
 elif [ -x "$(command -v sha256sum)" ]; then
-  downloaded_checksum=$(sha256sum $PKG_PATH | cut -d" " -f1)
+  downloaded_checksum=$(sha256sum "$PKG_PATH" | cut -d" " -f1)
 else
   printf "\033[31m shasum is not installed. Not checking binary contents. \033[0m\n"
   # For now, don't fail if shasum is not installed. Delete this check if you want to
@@ -176,7 +176,7 @@ else
   CHECKSUM=""
 fi
 
-if [ $downloaded_checksum = $CHECKSUM ]; then
+if [ "$downloaded_checksum" = "$CHECKSUM" ]; then
     printf "\033[34mChecksums match.\n\033[0m"
 else
     printf "\033[31m Checksums do not match. Please contact support@vanta.com \033[0m\n"
@@ -187,14 +187,14 @@ fi
 # Install the agent
 ##
 printf "\033[34m\n* Installing the Vanta Agent. You might be asked for your password...\n\033[0m"
-$SUDO $INSTALL_CMD $PKG_PATH
+"$SUDO" "$INSTALL_CMD" "$PKG_PATH"
 
 ##
 # Install the SELinux package
 ##
 if [ ! -z "$VANTA_EXPERIMENTAL_SELINUX" ]; then
     printf "\033[34m\n* Installing SELinux support\n\033[0m"
-    $SUDO $INSTALL_CMD $SELINUX_PATH
+    "$SUDO" "$INSTALL_CMD" "$SELINUX_PATH"
 fi
 
 
